@@ -1,0 +1,125 @@
+<div class="layuimini-main">
+
+    <div class="layui-form layuimini-form">
+        <input type="hidden" name="taskId" id="taskId"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">请假人</label>
+            <div class="layui-input-block">
+                <input type="text" id="username" name="username" lay-verify="required" lay-reqtext="用户名不能为空" placeholder="请输入用户名" value="" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">离开时间</label>
+            <div class="layui-input-block">
+                <input type="text"  id="leaveTime" name="leaveTime" lay-verify="required" lay-reqtext="手机不能为空" placeholder="请输入手机" value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">天数</label>
+            <div class="layui-input-block">
+                <input type="email" id="days" name="days" placeholder="请输入邮箱" value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">原因</label>
+            <div class="layui-input-block">
+                <textarea id="reason" cols="100" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">审批建议</label>
+            <div class="layui-input-block">
+                <textarea id="content" name="content" cols="100" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">同意</button>
+                <button class="layui-btn " lay-submit lay-filter="noBtn">驳回</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            $ = layui.$;
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+         //获取传过来的流程id
+         var proId=localStorage.getItem("proIds");
+         $.ajax({
+             url: "task/queryLeaveInfoByProId",
+             type: "post",
+             data: {'proId': proId},
+             success: function (res) {
+                 //拿到的结果值渲染到指定的form单中
+                 $("#username").val(res.user.username);
+                 $("#leaveTime").val(res.leaveDate);
+                 $("#days").val(res.leaveDays);
+                 $("#reason").val(res.reason);
+             }
+         });
+
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            var data=data.field;
+            debugger
+            $.ajax({
+                url:"task/saveInfo",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(data),
+                success:function(res){
+                    if(res.code==200){
+                        layer.msg("同意申请成功");
+                        window.reload();
+                        parent.layer.close(parentIndex);
+                    }else{
+                        layer.msg("同意申请失败");
+                    }
+                }
+            });
+
+
+
+            return false;
+        });
+
+
+
+        //监听提交
+        form.on('submit(noBtn)', function (data) {
+            var data=data.field;
+            $.ajax({
+                url:"task/saveInfo2",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(data),
+                success:function(res){
+                    if(res.code==200){
+                        layer.msg("驳回成功");
+                        window.reload();
+                        parent.layer.close(parentIndex);
+                    }else{
+                        layer.msg("驳回失败");
+                    }
+                }
+            });
+            return false;
+        });
+
+
+    });
+</script>

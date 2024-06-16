@@ -1,0 +1,68 @@
+<div class="layuimini-main">
+    <ul class="layui-timeline">
+        <div id="view">
+        <script id="demo" type="text/html">
+            {{#  layui.each(d.list, function(index, item){ }}
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"></i>
+            <div class="layui-timeline-content layui-text">
+                <h3 class="layui-timeline-title">
+                    审批人：{{ item.userId }}  审批时间{{ item.time}}</h3>
+            <p>
+                {{ item.fullMessage }}
+            </p>
+            </div>
+            </li>
+            {{#  }); }}
+
+        </script>
+        </div>
+
+        <li class="layui-timeline-item">
+            <i class="layui-icon layui-timeline-axis"></i>
+            <div class="layui-timeline-content layui-text">
+                <div class="layui-timeline-title">请假提交</div>
+            </div>
+        </li>
+    </ul>
+
+</div>
+
+
+<script>
+    layui.use(['form', 'table', 'laytpl','laydate','element'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+        var laytpl = layui.laytpl;
+        var element=layui.element;
+
+        var proId=localStorage.getItem("proId");
+        $.ajax({
+            url:"task/listCommentList",
+            type:"post",
+            data:{"taskId":proId},
+            success:function(result){
+                var demo=document.getElementById("demo");
+                var getTpl = demo.innerHTML
+                    ,view = document.getElementById('view');
+                laytpl(getTpl).render(result, function(html){
+                    view.innerHTML = html;
+                });
+                //重新加载下当前页面
+                element.init();
+            }
+
+        })
+
+        // var data = { //数据
+        //     "title":"Layui常用模块"
+        //     ,"list":[{"shijian":"弹层","content":"layer.layui.com"},{"shijian":"表单","content":"form"}]
+        // }
+        // var getTpl = demo.innerHTML
+        //     ,view = document.getElementById('view');
+        // laytpl(getTpl).render(data, function(html){
+        //     view.innerHTML = html;
+        // });
+    });
+</script>

@@ -1,0 +1,68 @@
+<div class="layuimini-main">
+
+    <div class="layui-form layuimini-form"  lay-filter="updateBtn">
+        <input name="id" type="hidden" id="id">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">输入新密码</label>
+            <div class="layui-input-block">
+                <input type="password" name="password" lay-verify="required"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">再次输入密码</label>
+            <div class="layui-input-block">
+                <input type="password" name="password2" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="updateBtn">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form','treeSelect', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            $ = layui.$;
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+        //监听提交
+        form.on('submit(updateBtn)', function (data) {
+            var data=data.field;
+            if(data.password!=data.password2){
+                layer.msg("两次密码不一致，重新输入...")
+                return false;
+            }
+
+            debugger
+            $.ajax({
+                url:"user/updatePassword",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(data),
+                success:function(res){
+                    if(res.code==200){
+                        layer.msg("修改密码成功");
+                         window.reload();
+                        parent.layer.close(parentIndex);
+                    }else{
+                        layer.msg("修改密码失败");
+                    }
+                }
+            });
+
+            return false;
+        });
+
+    });
+</script>

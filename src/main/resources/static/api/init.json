@@ -1,0 +1,65 @@
+  {
+  "homeInfo": {
+    "title": "首页",
+    "href": "page/dept/index.html"
+  },
+  "logoInfo": {
+    "title": "请假管理系统",
+    "image": "images/logo.png",
+    "href": ""
+  },
+  "menuInfo": [
+    {
+      "title": "菜单列表",
+      "icon": "fa fa-address-book",
+      "href": "",
+      "target": "_self",
+      "child": [
+        {
+          "title": "基础设置",
+          "href": "",
+          "icon": "fa fa-home",
+          "target": "_self",
+          "child": [
+            {
+              "title": "组织结构",
+              "href": "page/dept/index.html",
+              "icon": "fa fa-tachometer",
+              "target": "_self"
+            },
+            {
+              "title": "用户管理",
+              "href": "page/user/index.html",
+              "icon": "fa fa-tachometer",
+              "target": "_self"
+            }
+          ]
+        },
+
+        {
+          "title": "请假管理",
+          "href": "page/leave/index.html",
+          "icon": "fa fa-window-maximize",
+          "target": "_self"
+        },
+
+
+        {
+          "title": "统计分析",
+          "href": "",
+          "icon": "fa fa-home",
+          "target": "_self",
+          "child": [
+            {
+              "title": "根据班级统计",
+              "href": "page/tongji/index.html",
+              "icon": "fa fa-tachometer",
+              "target": "_self"
+            }
+          ]
+        }
+      ]
+    }
+
+  ]
+}

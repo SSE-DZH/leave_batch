@@ -1,0 +1,78 @@
+<div class="layuimini-main">
+
+    <div class="layui-form layuimini-form">
+        <input type="hidden" name="id" id="id">
+        <input type="hidden" name="parentId" id="parentId">
+        <input type="hidden" name="type" id="type">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" id="name" lay-verify="required"  placeholder="请输入名称" value="" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">排序</label>
+            <div class="layui-input-block">
+                <input type="number" name="sort" id="sort" lay-verify="required" lay-reqtext="手机不能为空" placeholder="请输入手机" value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">状态</label>
+            <div class="layui-input-block">
+                <input type="checkbox" id="status" checked="" name="status" lay-skin="switch" lay-filter="switchTest" lay-text="正常|禁用">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="updateBtn">确认修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            $ = layui.$;
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(updateBtn)', function (data) {
+            var data=data.field;
+            debugger
+            //状态需要特殊处理
+            if(data.status=='on'){
+                data.status=1;
+            }else{
+                data.status=0;
+            }
+
+            $.ajax({
+                url:"dept/updateInfo",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(data),
+                success:function(res){
+                   if(res.code==200){
+                       layer.msg("修改成功");
+                       window.reload();
+                       layer.close(parentIndex);
+                   }else{
+                       layer.msg("修改失败");
+                   }
+                }
+            });
+
+            return false;
+        });
+
+    });
+</script>

@@ -1,0 +1,100 @@
+<div class="layuimini-container layuimini-page-anim">
+    <div class="layuimini-main">
+
+
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">办理任务</a>
+            <a class="layui-btn  layui-btn-xs data-count-edit" lay-event="query">查询详细</a>
+        </script>
+
+    </div>
+</div>
+
+<script>
+    layui.use(['form', 'table','miniPage','element'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            miniPage = layui.miniPage;
+
+        window.reload=function(){
+            table.reload('currentTableId');
+        }
+
+        table.render({
+            elem: '#currentTableId',
+            url: 'task/queryTaskListByUserId',
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                {type: "checkbox", width: 50},
+                {field: 'id', width: 120, title: '任务id'},
+                {field: 'proId', width: 120, title: '流程id'},
+                {field: 'name', width: 150, title: '任务名称'},
+                {field: 'createTime', width: 150, title: '创建时间'},
+                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+
+
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                var content = miniPage.getHrefContent('page/task/banli.html');
+                var index = layer.open({
+                    title: '在线办理',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['60%', '60%'],
+                    content: content,
+                });
+                //任务id传值
+                $("#taskId").val(data.id);
+                //流程id传值
+                localStorage.setItem("proIds",data.proId);
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
+            }else if (obj.event === 'query') {
+                var content = miniPage.getHrefContent('page/leave/info.html');
+                var index = layer.open({
+                    title: '详细信息',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['60%', '60%'],
+                    content: content,
+                });
+                //任务id传值
+                localStorage.setItem("proId",data.proId);
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
+            }
+        });
+
+    });
+</script>

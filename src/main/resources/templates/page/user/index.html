@@ -1,0 +1,224 @@
+<div class="layuimini-container layuimini-page-anim">
+    <div class="layuimini-main">
+
+        <div class="demoTable">
+            用户名：
+            <div class="layui-inline">
+                <input class="layui-input" name="username"  id="username" autocomplete="off">
+            </div>
+            邮箱：
+            <div class="layui-inline">
+                <input class="layui-input" name="email"  id="email" autocomplete="off">
+            </div>
+            <button class="layui-btn" data-type="reload">搜索</button>
+        </div>
+
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+                <button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
+    </div>
+</div>
+
+<script>
+    layui.use(['form', 'table','miniPage','element'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            miniPage = layui.miniPage;
+         window.reload=function(){
+             table.reload('currentTableId');
+         }
+
+        table.render({
+            elem: '#currentTableId',
+            url: 'user/queryUserAll',
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                {type: "checkbox", width: 50},
+                // {field: 'id', width: 80, title: 'ID', sort: true},
+                {field: 'username', width: 100, title: '登录名'},
+                {field: 'realname', width: 120, title: '真实名称'},
+                {field: 'sex', width: 80, title: '性别'},
+                {templet:'<div>{{ d.deptInfo.name}}</div>' ,width: 150, title: '所在结构'},
+                {field: 'roleName', width: 80, title: '角色', sort: true},
+                {field: 'tel', width: 100, title: '电话'},
+                {field: 'email', width: 120, title: '邮箱'},
+                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var username = $('#username');
+                var email = $('#email');
+                //执行重载
+                table.reload('currentTableId', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        username:username.val(),
+                        email:email.val()
+                    }
+                }, 'data');
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+
+
+        /**
+         * toolbar事件监听
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {   // 监听添加操作
+                var content = miniPage.getHrefContent('page/user/add.html');
+                var openWH = miniPage.getOpenWidthHeight();
+                var index = layer.open({
+                    title: '添加用户',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['70%', '70%'],
+                    content: content,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            } else if (obj.event === 'delete') {  // 监听删除操作
+                /*
+                   1、选择要删除的记录信息
+                   2、获取选择信息id的集合
+                   3、向后端发送请求
+                   4、实现删除并刷新页面
+                 */
+                var checkStatus = table.checkStatus('currentTableId')
+                    , data = checkStatus.data;
+               if(data.length==0){
+                   layer.msg("请选择要删除的记录信息");
+               }else{
+                   layer.confirm('你确定要删除吗？',function(index){
+                       //、获取选择信息id的集合
+                       var ids=getCheckId(data);
+                       //向后端发送请求
+                       deteleByIds(ids);
+
+                   })
+               }
+
+            }
+        });
+
+
+        /**
+         * 删除用户记录信息
+         */
+        function deteleByIds(ids){
+            debugger
+            $.ajax({
+                url:"user/deleteByIds",
+                type:"post",
+                data:{'ids':ids},
+                success:function(res){
+                    if(res.code==200){
+                        layer.msg("删除成功");
+                        window.reload();//重新加载table页面
+                    }else{
+                        layer.msg("删除失败");
+                    }
+                }
+            });
+        }
+
+
+        /**
+         * 有获取到的记录信息获取id属性值的集合
+         */
+        function getCheckId(data){
+            var arr=new Array();
+            for(var i=0;i<data.length;i++){
+                arr.push(data[i].id);
+            }
+            return arr.join(",");
+        }
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+        /**
+         * 设置form中的值信息
+         */
+        function setValues(data){
+           form.val("updateBtn",{
+               "id":data.id,
+               "username":data.username,
+               "roleName":data.roleName,
+               "realname":data.realname,
+               "sex":data.sex,
+               "tel":data.tel,
+               "email":data.email,
+               "deptId":data.deptId,
+               "roleId":data.roleName
+           });
+        }
+
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                var content = miniPage.getHrefContent('page/user/update.html');
+                var openWH = miniPage.getOpenWidthHeight();
+                var index = layer.open({
+                    title: '编辑用户',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: [openWH[0] + 'px', openWH[1] + 'px'],
+                    offset: [openWH[2] + 'px', openWH[3] + 'px'],
+                    content: content,
+                });
+                setValues(data);
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
+            } else if (obj.event === 'delete') {
+                layer.confirm('真的删除行么', function (index) {
+                    //向后端发送请求
+                    deteleByIds(data.id);
+                });
+            }
+        });
+
+    });
+</script>

@@ -1,0 +1,78 @@
+<div class="layuimini-main">
+
+    <div class="layui-form layuimini-form">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label required">请假天数</label>
+            <div class="layui-input-block">
+                <input type="text" name="leaveDays" lay-verify="required"  class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">离开时间</label>
+            <div class="layui-input-block">
+                <input type="text" name="leaveDate" id="date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">请假原因</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" name="reason" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'table', 'laydate'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            table = layui.table,
+            laydate = layui.laydate;
+            $ = layui.$;
+        //日期
+        laydate.render({
+            elem: '#date'
+        });
+
+        /**
+         * 初始化表单，要加上，不然刷新部分组件可能会不加载
+         */
+        form.render();
+
+        // 当前弹出层，防止ID被覆盖
+        var parentIndex = layer.index;
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            var data=data.field;
+            debugger
+            $.ajax({
+                url:"leave/saveInfo",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(data),
+                success:function(res){
+                    if(res.code==200){
+                        layer.msg("请假填写成功");
+                         window.reload();
+                        parent.layer.close(parentIndex);
+                    }else{
+                        layer.msg("填写失败");
+                    }
+                }
+            });
+
+            return false;
+        });
+
+    });
+</script>

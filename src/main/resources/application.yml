@@ -1,0 +1,40 @@
+server:
+  port: 8899
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/leave?useUnicode=true&characterEncoding=utf8&nullCatalogMeansCurrent=true&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+    password: root
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/templates/
+  devtools: #热部署
+    livereload:
+      enabled: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  activiti:
+    # 1 true 没有的时候创建，有呢进行更新
+#    database-schema-update: false
+    db-history-used: true
+    history-level: full
+    check-process-definitions: false
+
+mybatis:
+  type-aliases-package: com.yanzhen.model
+  mapper-locations: classpath:com/yanzhen/dao/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+
+
+
+
+
+

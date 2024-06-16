@@ -1,0 +1,194 @@
+<div class="layuimini-container layuimini-page-anim">
+    <div class="layuimini-main">
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 我要请假 </button>
+            </div>
+        </script>
+
+        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+
+        <script type="text/html" id="currentTableBar">
+            {{#  if(d.state=='0'){ }}
+            <a class="layui-btn layui-btn-xs layui-bg-orange" lay-event="tijiao">提交申请</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</a>
+            {{# }else{ }}
+            <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="query">查询</a>
+            {{# } }}
+           </script>
+
+    </div>
+</div>
+
+<script>
+    layui.use(['form', 'table','miniPage','element'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table,
+            miniPage = layui.miniPage;
+         window.reload=function(){
+             table.reload('currentTableId');
+         }
+
+        table.render({
+            elem: '#currentTableId',
+            url: 'leave/queryLeaveAll',
+            toolbar: '#toolbarDemo',
+            defaultToolbar: ['filter', 'exports', 'print', {
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                {type: "checkbox", width: 50},
+                // {field: 'id', width: 80, title: 'ID', sort: true},
+                {templet:'<div>{{ d.user.username}}</div>', width: 100, title: '学生'},
+                {templet:'<div>{{ d.user.tel}}</div>', width: 100, title: '联系方式'},
+                {templet:"<div>{{ layui.util.toDateString(d.leaveDate,'yyyy-MM-dd HH:mm:ss')}}</div>", width: 150, title: '离开时间'},
+                {field: 'leaveDays', width: 120, title: '天数'},
+                {field: 'reason', width: 150, title: '原因'},
+                {field:'state',title:'状态',templet:
+                     function(res){
+                         if(res.state=='1'){
+                             return '<span class="layui-bg-red">审核中</span>';
+                         }else if(res.state=='0'){
+                             return '<span class="layui-bg-green">待提交</span>';
+                         }else if(res.state=='2'){
+                             return '<span class="layui-bg-blue">审核完成</span>';
+                         }else if(res.state=='3'){
+                             return '<span class="layui-bg-orange">驳回</span>';
+                         }
+                    }
+                },
+                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 15,
+            page: true,
+            skin: 'line'
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            debugger
+            var result = data.field;
+            var username=result.username;
+            var email=result.email;
+            layer.alert(result, {
+                title: '最终的搜索信息'
+            });
+
+            //执行搜索重载
+            table.reload('currentTableId', {
+                page: {
+                    curr: 1
+                }
+                , where: {
+                   'username':username,
+                    'email':email
+                }
+            }, 'data');
+
+            return false;
+        });
+
+        /**
+         * toolbar事件监听
+         */
+        table.on('toolbar(currentTableFilter)', function (obj) {
+            if (obj.event === 'add') {   // 监听添加操作
+                var content = miniPage.getHrefContent('page/leave/add.html');
+                var openWH = miniPage.getOpenWidthHeight();
+                var index = layer.open({
+                    title: '我要请假',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['60%', '60%'],
+                    content: content,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        });
+
+
+        /**
+         * 删除用户记录信息
+         */
+        function deteleByIds(ids){
+            debugger
+            $.ajax({
+                url:"leave/deleteByIds",
+                type:"post",
+                data:{'id':ids},
+                success:function(res){
+                    if(res.code==200){
+                        layer.msg("删除成功");
+                        window.reload();//重新加载table页面
+                    }else{
+                        layer.msg("删除失败");
+                    }
+                }
+            });
+        }
+
+
+
+
+        //监听表格复选框选择
+        table.on('checkbox(currentTableFilter)', function (obj) {
+            console.log(obj)
+        });
+
+
+
+
+        table.on('tool(currentTableFilter)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'tijiao') {
+                layer.confirm('确定要提交请假申请吗？', function (index) {
+                    $.ajax({
+                        url:"leave/startApply",
+                        type:"post",
+                        data:{'leaveId':data.id},
+                        success:function(res){
+                            if(res.code==200){
+                                layer.msg("提交成功");
+                                window.reload();//重新加载table页面
+                            }else{
+                                layer.msg("提交失败");
+                            }
+                        }
+                    });
+
+                });
+                return false;
+            } else if (obj.event === 'delete') {
+                layer.confirm('真的删除行么', function (index) {
+                    //向后端发送请求
+                    deteleByIds(data.id);
+                });
+            } else if (obj.event === 'query') {
+                var content = miniPage.getHrefContent('page/leave/info.html');
+                var index = layer.open({
+                    title: '审核流程',
+                    type: 1,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['60%', '60%'],
+                    content: content,
+                });
+                localStorage.clear();
+                localStorage.setItem("proId",data.processinstanceid);
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        });
+
+    });
+</script>
